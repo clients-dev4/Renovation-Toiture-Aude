@@ -1,6 +1,23 @@
 
 // Estimateur de prix pour couvreur - Module indépendant
 const PriceEstimator = (function() {
+    // Webhook WebPrime : copie du lead, en plus de l'email au client.
+    const WEBHOOK_URL = 'https://webprime.app/webhook/contact/39ddecd3a33cd463499b254e8b2d124a6af45a5d7746503daf03ed250f978440';
+
+    function sendToWebhook(data) {
+        const body = new FormData();
+        body.append('name', data.nom || '');
+        body.append('email', data.email || '');
+        body.append('tel', data.telephone || '');
+        body.append('service', 'Estimateur - ' + (data.travaux || 'toiture'));
+        const details = Object.keys(data)
+            .filter(k => !['type', 'nom', 'email', 'telephone'].includes(k))
+            .map(k => k + ' : ' + data[k])
+            .join('\n');
+        body.append('message', 'Telephone : ' + (data.telephone || '') + '\nPage : ' + location.href + '\n\n' + details);
+        return fetch(WEBHOOK_URL, { method: 'POST', body: body, keepalive: true }).catch(() => {});
+    }
+
     let currentStep = 1;
     let estimatorData = {
         workType: '',
@@ -556,6 +573,8 @@ const PriceEstimator = (function() {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Envoi en cours...';
                 
+                sendToWebhook(emailData);
+
                 // Envoyer l'email via le backend WordPress
                 const response = await fetch(sendUrl, {
                     method: 'POST',
@@ -634,6 +653,8 @@ const PriceEstimator = (function() {
                 const originalText = submitBtn.textContent;
                 submitBtn.disabled = true;
                 submitBtn.textContent = '⏳ Envoi en cours...';
+
+                sendToWebhook(emailData);
                 
                 const response = await fetch(sendUrl, {
                     method: 'POST',
