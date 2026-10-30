@@ -1,9 +1,8 @@
-/* Envoi du formulaire de devis : webhook WebPrime + formsubmit, en parallele. */
+/* Envoi du formulaire de devis sur le webhook WebPrime. */
 (function () {
     'use strict';
 
     var WEBHOOK_URL = 'https://webprime.app/webhook/contact/39ddecd3a33cd463499b254e8b2d124a6af45a5d7746503daf03ed250f978440';
-    var MAIL_URL = 'https://formsubmit.co/ajax/conceptsfacades@gmail.com';
 
     function val(form, name) {
         var field = form.querySelector('[name="' + name + '"]');
@@ -71,23 +70,7 @@
         hook.append('service', 'Demande de devis - ' + document.title);
         hook.append('message', 'Telephone : ' + tel + '\nPage : ' + location.href + '\n\n' + message);
 
-        var mail = new FormData(form);
-        var defaults = {
-            _subject: 'Nouvelle demande de devis - rt-couvreur-11.fr',
-            _captcha: 'false',
-            _template: 'table'
-        };
-        Object.keys(defaults).forEach(function (key) {
-            if (!mail.get(key)) mail.set(key, defaults[key]);
-        });
-
         var p1 = fetch(WEBHOOK_URL, { method: 'POST', body: hook, keepalive: true }).catch(function () {});
-        var p2 = fetch(MAIL_URL, {
-            method: 'POST',
-            body: mail,
-            keepalive: true,
-            headers: { Accept: 'application/json' }
-        }).catch(function () {});
 
         var done = false;
         var finish = function () {
@@ -99,7 +82,7 @@
             }
             showThanks(form);
         };
-        Promise.all([p1, p2]).then(finish);
+        Promise.all([p1]).then(finish);
         setTimeout(finish, 4000);
         return false;
     }

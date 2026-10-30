@@ -1,7 +1,7 @@
 
 // Estimateur de prix pour couvreur - Module indépendant
 const PriceEstimator = (function() {
-    // Webhook WebPrime : copie du lead, en plus de l'email au client.
+    // Webhook WebPrime : le lead part dans l'app et par email au client.
     const WEBHOOK_URL = 'https://webprime.app/webhook/contact/39ddecd3a33cd463499b254e8b2d124a6af45a5d7746503daf03ed250f978440';
 
     function sendToWebhook(data) {
@@ -565,49 +565,19 @@ const PriceEstimator = (function() {
             };
             
             
-            const sendUrl = window.SEND_EMAIL_URL || 'https://formsubmit.co/ajax/conceptsfacades@gmail.com';
-            
             try {
                 const submitBtn = form.querySelector('.btn-submit-quote');
-                const originalText = submitBtn.textContent;
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Envoi en cours...';
                 
-                sendToWebhook(emailData);
+                await sendToWebhook(emailData);
 
-                // Envoyer l'email via le backend WordPress
-                const response = await fetch(sendUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ ...emailData, _subject: 'Nouvelle demande estimateur - rt-couvreur-11.fr', _template: 'table', _captcha: 'false' })
-                });
+                form.style.display = 'none';
+                successMsg.style.display = 'block';
                 
-                
-                // Récupérer la réponse comme texte brut
-                const responseText = await response.text();
-                
-                // Nettoyer les BOM et espaces en début
-                let cleanText = responseText.replace(/^\uFEFF/, '');
-                cleanText = cleanText.replace(/^[\s\n\r\t\x00\x0B]+/, '');
-                
-                
-                // Parser le JSON nettoyé
-                const result = JSON.parse(cleanText);
-                
-                if (result.success) {
-                    form.style.display = 'none';
-                    successMsg.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        overlay.remove();
-                    }, 3000);
-                } else {
-                    alert('Erreur: ' + (result.error || 'Erreur lors de l\'envoi. Veuillez réessayer.'));
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
+                setTimeout(() => {
+                    overlay.remove();
+                }, 3000);
             } catch (error) {
                 alert('Erreur lors de l\'envoi. Veuillez réessayer ou nous appeler directement.');
                 const submitBtn = form.querySelector('.btn-submit-quote');
@@ -646,49 +616,20 @@ const PriceEstimator = (function() {
             };
             
             
-            const sendUrl = window.SEND_EMAIL_URL || 'https://formsubmit.co/ajax/conceptsfacades@gmail.com';
-            
             try {
                 const submitBtn = form.querySelector('.btn-submit-estimator');
-                const originalText = submitBtn.textContent;
                 submitBtn.disabled = true;
                 submitBtn.textContent = '⏳ Envoi en cours...';
 
-                sendToWebhook(emailData);
+                await sendToWebhook(emailData);
+
+                form.style.display = 'none';
+                successMsg.style.display = 'block';
                 
-                const response = await fetch(sendUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ ...emailData, _subject: 'Nouvelle demande estimateur - rt-couvreur-11.fr', _template: 'table', _captcha: 'false' })
-                });
-                
-                
-                // Récupérer la réponse comme texte brut
-                const responseText = await response.text();
-                
-                // Nettoyer les BOM et espaces en début
-                let cleanText = responseText.replace(/^\uFEFF/, '');
-                cleanText = cleanText.replace(/^[\s\n\r\t\x00\x0B]+/, '');
-                
-                
-                // Parser le JSON nettoyé
-                const result = JSON.parse(cleanText);
-                
-                if (result.success) {
-                    form.style.display = 'none';
-                    successMsg.style.display = 'block';
-                    
-                    // Réinitialiser après 5 secondes
-                    setTimeout(() => {
-                        reset();
-                    }, 5000);
-                } else {
-                    alert('Erreur: ' + (result.error || 'Erreur lors de l\'envoi. Veuillez réessayer.'));
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
+                // Réinitialiser après 5 secondes
+                setTimeout(() => {
+                    reset();
+                }, 5000);
             } catch (error) {
                 alert('Erreur lors de l\'envoi. Veuillez réessayer ou nous appeler directement.');
                 const submitBtn = form.querySelector('.btn-submit-estimator');

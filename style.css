@@ -567,7 +567,7 @@ to{opacity:1;transform:translateX(0)}
 }
 .radius-info-close{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.1);border:none;width:20px;height:20px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;color:#666}
 .radius-info-close:hover{background:rgba(0,0,0,.2);transform:rotate(90deg)}
-.radius-info-box h4{color:var(--color-primary);font-size:.95rem;margin:0 0 .5rem 0;font-weight:700}
+.radius-info-box h3{color:var(--color-primary);font-size:.95rem;margin:0 0 .5rem 0;font-weight:700}
 .radius-badge{display:inline-flex;align-items:center;gap:.3rem;background:var(--color-primary);color:#fff;padding:.3rem .6rem;border-radius:16px;margin-bottom:.4rem;border:1.5px solid var(--color-primary);font-size:.8rem}
 .radius-icon{font-size:.85rem}
 .radius-badge span:last-child{font-weight:600;color:#fff;font-size:.8rem}
@@ -817,7 +817,7 @@ to{opacity:1;transform:translateY(0)}
 .chatbox-menu{position:absolute;bottom:80px;right:0;width:320px;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);opacity:0;visibility:hidden;transform:translateY(20px);transition:all .3s ease}
 .chatbox-menu.active{opacity:1;visibility:visible;transform:translateY(0)}
 .chatbox-header{background:var(--color-primary);color:#fff;padding:1.2rem 1.5rem;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center}
-.chatbox-header h4{margin:0;font-size:1.1rem;font-weight:600}
+.chatbox-header h3{margin:0;font-size:1.1rem;font-weight:600}
 .chatbox-close{background:0 0;border:none;color:#fff;font-size:1.8rem;cursor:pointer;line-height:1;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .2s}
 .chatbox-close:hover{background:rgba(255,255,255,.2)}
 .chatbox-options{padding:1rem;display:flex;flex-direction:column;gap:.5rem}
@@ -895,7 +895,7 @@ to{opacity:1;transform:translateY(0)}
 .chatbox-toggle svg{width:24px;height:24px}
 .chatbox-menu{bottom:65px;right:0;width:calc(100vw - 2rem);max-width:340px;left:auto}
 .chatbox-header{padding:1rem}
-.chatbox-header h4{font-size:1rem}
+.chatbox-header h3{font-size:1rem}
 .chatbox-options{padding:.8rem}
 .chatbox-option{padding:.8rem;gap:.8rem}
 .option-icon{font-size:1.5rem;width:35px;height:35px}
