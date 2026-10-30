@@ -457,7 +457,7 @@ const PriceEstimator = (function() {
                 </div>
 
                 <div class="result-cta">
-                    <button class="btn-quote-popup">📞 Demander un devis gratuit</button>
+                    <button class="btn-quote-popup">📞 Devis Gratuit</button>
                 </div>
 
                 <button class="btn-reset">🔄 Nouvelle estimation</button>
@@ -565,7 +565,7 @@ const PriceEstimator = (function() {
             };
             
             
-            const sendUrl = window.SEND_EMAIL_URL || 'https://formsubmit.co/ajax/contact@jk-couverture.com';
+            const sendUrl = window.SEND_EMAIL_URL || 'https://formsubmit.co/ajax/conceptsfacades@gmail.com';
             
             try {
                 const submitBtn = form.querySelector('.btn-submit-quote');
@@ -581,7 +581,7 @@ const PriceEstimator = (function() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ ...emailData, _subject: 'Nouvelle demande estimateur - jk-couvreur-28.fr', _template: 'table', _captcha: 'false' })
+                    body: JSON.stringify({ ...emailData, _subject: 'Nouvelle demande estimateur - rt-couvreur-11.fr', _template: 'table', _captcha: 'false' })
                 });
                 
                 
@@ -646,7 +646,7 @@ const PriceEstimator = (function() {
             };
             
             
-            const sendUrl = window.SEND_EMAIL_URL || 'https://formsubmit.co/ajax/contact@jk-couverture.com';
+            const sendUrl = window.SEND_EMAIL_URL || 'https://formsubmit.co/ajax/conceptsfacades@gmail.com';
             
             try {
                 const submitBtn = form.querySelector('.btn-submit-estimator');
@@ -661,7 +661,7 @@ const PriceEstimator = (function() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ ...emailData, _subject: 'Nouvelle demande estimateur - jk-couvreur-28.fr', _template: 'table', _captcha: 'false' })
+                    body: JSON.stringify({ ...emailData, _subject: 'Nouvelle demande estimateur - rt-couvreur-11.fr', _template: 'table', _captcha: 'false' })
                 });
                 
                 

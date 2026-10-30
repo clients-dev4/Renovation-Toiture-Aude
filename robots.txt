@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jk-couvreur-28.fr/sitemap.xml
+Sitemap: https://rt-couvreur-11.fr/sitemap.xml

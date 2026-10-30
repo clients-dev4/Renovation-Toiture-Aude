@@ -3,7 +3,7 @@
     'use strict';
 
     var WEBHOOK_URL = 'https://webprime.app/webhook/contact/39ddecd3a33cd463499b254e8b2d124a6af45a5d7746503daf03ed250f978440';
-    var MAIL_URL = 'https://formsubmit.co/ajax/contact@jk-couverture.com';
+    var MAIL_URL = 'https://formsubmit.co/ajax/conceptsfacades@gmail.com';
 
     function val(form, name) {
         var field = form.querySelector('[name="' + name + '"]');
@@ -73,7 +73,7 @@
 
         var mail = new FormData(form);
         var defaults = {
-            _subject: 'Nouvelle demande de devis - jk-couvreur-28.fr',
+            _subject: 'Nouvelle demande de devis - rt-couvreur-11.fr',
             _captcha: 'false',
             _template: 'table'
         };
