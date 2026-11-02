@@ -810,7 +810,7 @@ document.addEventListener('DOMContentLoaded', function() {
         '#FF6B6B', '#ff6b6b',
         '#FF4444', '#ff4444',
         '#f9e406', '#F9E406',
-        '#6BA6FF', '#6ba6ff'
+        '#7391ca', '#7391ca'
     ];
 
     // Remplacer dans tous les éléments avec attribut style

@@ -137,7 +137,7 @@
     background: #fff;
     border-color: var(--color-primary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+    box-shadow: 0 4px 12px rgba(37,65,118, 0.15);
 }
 
 .option-icon {
@@ -245,7 +245,7 @@
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(37, 99, 235, 0.4), 0 0 20px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 10px rgba(37, 65, 118, 0.4), 0 0 20px rgba(37, 65, 118, 0.2);
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
@@ -257,16 +257,16 @@
 
 @keyframes neonRedPulse {
     0%, 100% {
-        box-shadow: 0 0 10px rgba(37, 99, 235, 0.3), 0 0 20px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 0 10px rgba(37, 65, 118, 0.3), 0 0 20px rgba(37, 65, 118, 0.2);
     }
     50% {
-        box-shadow: 0 0 15px rgba(37, 99, 235, 0.5), 0 0 30px rgba(37, 99, 235, 0.3);
+        box-shadow: 0 0 15px rgba(37, 65, 118, 0.5), 0 0 30px rgba(37, 65, 118, 0.3);
     }
 }
 
 .btn-quote-popup:hover {
     transform: translateY(-3px);
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.6), 0 0 40px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 0 20px rgba(37, 65, 118, 0.6), 0 0 40px rgba(37, 65, 118, 0.4);
     background: linear-gradient(135deg, #EAB308 0%, #EAB308 50%, #EAB308 100%);
 }
 
@@ -455,7 +455,7 @@
     }
     
     .estimator-content::-webkit-scrollbar-thumb {
-        background: rgba(37, 99, 235, 0.3);
+        background: rgba(37, 65, 118, 0.3);
         border-radius: 10px;
     }
     
@@ -735,7 +735,7 @@
     cursor: pointer;
     transition: all 0.3s;
     margin-top: 8px;
-    box-shadow: 0 0 10px rgba(37, 99, 235, 0.4), 0 0 20px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 10px rgba(37, 65, 118, 0.4), 0 0 20px rgba(37, 65, 118, 0.2);
     animation: neonRedPulse 2s ease-in-out infinite;
 }
 
@@ -743,7 +743,7 @@
     background: linear-gradient(135deg, #EAB308 0%, #EAB308 50%, #EAB308 100%);
     color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.6), 0 0 40px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 0 20px rgba(37, 65, 118, 0.6), 0 0 40px rgba(37, 65, 118, 0.4);
 }
 
 .quote-success {
@@ -814,35 +814,35 @@
     cursor: pointer;
     transition: all 0.3s;
     margin-top: 0.5rem;
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.6),
-                0 0 40px rgba(37, 99, 235, 0.4),
-                0 0 60px rgba(37, 99, 235, 0.2),
-                inset 0 0 20px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 20px rgba(37, 65, 118, 0.6),
+                0 0 40px rgba(37, 65, 118, 0.4),
+                0 0 60px rgba(37, 65, 118, 0.2),
+                inset 0 0 20px rgba(37, 65, 118, 0.2);
     font-family: inherit;
     animation: neon-pulse 2s ease-in-out infinite alternate;
 }
 
 @keyframes neon-pulse {
     0% {
-        box-shadow: 0 0 20px rgba(37, 99, 235, 0.6),
-                    0 0 40px rgba(37, 99, 235, 0.4),
-                    0 0 60px rgba(37, 99, 235, 0.2),
-                    inset 0 0 20px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 0 20px rgba(37, 65, 118, 0.6),
+                    0 0 40px rgba(37, 65, 118, 0.4),
+                    0 0 60px rgba(37, 65, 118, 0.2),
+                    inset 0 0 20px rgba(37, 65, 118, 0.2);
     }
     100% {
-        box-shadow: 0 0 30px rgba(37, 99, 235, 0.8),
-                    0 0 60px rgba(37, 99, 235, 0.6),
-                    0 0 90px rgba(37, 99, 235, 0.4),
-                    inset 0 0 30px rgba(37, 99, 235, 0.3);
+        box-shadow: 0 0 30px rgba(37, 65, 118, 0.8),
+                    0 0 60px rgba(37, 65, 118, 0.6),
+                    0 0 90px rgba(37, 65, 118, 0.4),
+                    inset 0 0 30px rgba(37, 65, 118, 0.3);
     }
 }
 
 .btn-submit-estimator:hover {
     background: linear-gradient(135deg, #EAB308 0%, #EAB308 100%);
     transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(37, 99, 235, 0.8),
-                0 0 60px rgba(37, 99, 235, 0.6),
-                0 0 90px rgba(37, 99, 235, 0.4),
+    box-shadow: 0 0 30px rgba(37, 65, 118, 0.8),
+                0 0 60px rgba(37, 65, 118, 0.6),
+                0 0 90px rgba(37, 65, 118, 0.4),
                 0 4px 20px rgba(0, 0, 0, 0.3);
     border-color: #EAB308;
 }
