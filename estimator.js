@@ -4,19 +4,25 @@ const PriceEstimator = (function() {
     // Webhook WebPrime : le lead part dans l'app et par email au client.
     const WEBHOOK_URL = 'https://webprime.app/webhook/contact/39ddecd3a33cd463499b254e8b2d124a6af45a5d7746503daf03ed250f978440';
 
-    function sendToWebhook(data) {
+    // Même envoi que le formulaire de contact du site (forms.js) : name, email, tel, service, message.
+    // Le message reprend les réponses aux questions.
+    function sendToWebhook(contact, answers) {
         const body = new FormData();
-        body.append('name', data.nom || '');
-        body.append('email', data.email || '');
-        body.append('tel', data.telephone || '');
-        body.append('service', 'Estimateur - ' + (data.travaux || 'toiture'));
-        const details = Object.keys(data)
-            .filter(k => !['type', 'nom', 'email', 'telephone'].includes(k))
-            .map(k => k + ' : ' + data[k])
-            .join('\n');
-        body.append('message', 'Telephone : ' + (data.telephone || '') + '\nPage : ' + location.href + '\n\n' + details);
+        body.append('name', contact.nom);
+        body.append('email', contact.email);
+        body.append('tel', contact.telephone);
+        body.append('service', 'Demande de devis - ' + answers['Travaux']);
+        const details = Object.keys(answers).map(k => k + ' : ' + answers[k]).join('\n');
+        body.append('message', 'Telephone : ' + contact.telephone + '\nPage : ' + location.href + '\n\n' + details);
         return fetch(WEBHOOK_URL, { method: 'POST', body: body, keepalive: true }).catch(() => {});
     }
+
+    // Mêmes règles que le formulaire de contact du site
+    const CONTACT_CHECKS = {
+        nom: [v => v.length >= 2, 'Indiquez votre nom'],
+        email: [v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), 'Adresse email invalide'],
+        telephone: [v => /^(\+33|0)[1-9](\d{2}){4}$/.test(v.replace(/[\s.-]/g, '')), 'Numéro de téléphone invalide']
+    };
 
     let currentStep = 1;
     let estimatorData = {
@@ -27,36 +33,6 @@ const PriceEstimator = (function() {
         access: '',
         materials: '',
         delay: ''
-    };
-
-    // --- Prix base €/m² par type de travaux ---
-    const BASE_BY_WORK = {
-        "Rénovation Toiture":                        80,
-        "Réparation Toiture":                        75,
-        "Urgence réparation fuite":                  90,
-        "Remplacement complet toiture à neuf":       120,
-        "Ravalement de façade":                      45,
-        "Nettoyage toiture":                         30,
-        "Pose de gouttières":                        50,
-        "Zinguerie":                                 85,
-        "Pose et remplacement de fenetre de toit":   180,
-        "Réparation Faitière":                       70
-    };
-
-    // --- m² de référence par palier ---
-    const SURFACE_BUCKET = {
-        "Moins de 50 m²":   40,
-        "50 à 100 m²":      75,
-        "100 à 200 m²":     150,
-        "Plus de 200 m²":   240
-    };
-
-    // --- Coefficients de contexte ---
-    const HOUSING_FACTOR = {
-        "Maison individuelle":         1.00,
-        "Appartement / Copropriété":   1.08,
-        "Local commercial":            1.12,
-        "Bâtiment industriel":         1.18
     };
 
     // Générer dynamiquement les villes depuis la configuration
@@ -72,59 +48,16 @@ const PriceEstimator = (function() {
                      deptDet === 'dans les' ? 'des' : 
                      deptDet; // Si déjà 'de', 'du', 'de la', 'de l\'', 'des', on garde
     
-    const LOCATION_FACTORS = {};
-    interventionCities.forEach(city => {
-        LOCATION_FACTORS[city] = 1.00;
-    });
-    LOCATION_FACTORS[`Autre commune ${deptDetOf}${deptDetOf.endsWith("'")?'':' '}${dept}`] = 1.00;
-
-    const ACCESS_FACTOR = {
-        "Accès facile":                 1.00,
-        "Accès moyen":                  1.10,
-        "Accès difficile":              1.22,
-        "Très difficile (hauteur)":     1.35
-    };
-
-    const MATERIAL_FACTOR = {
-        "Économique":    0.92,
-        "Standard":      1.00,
-        "Premium":       1.15,
-        "Haut de gamme": 1.30
-    };
-
-    const DEADLINE_FACTOR = {
-        "Urgence (fuite)":  1.25,
-        "Sous 2 semaines":  1.10,
-        "Dans le mois":     1.00,
-        "Pas pressé":       0.95
-    };
-
-    // --- Indication horaire moyenne par type ---
-    const HOURLY_HINT = {
-        "Recherche de fuites toiture":          "65–95 € HT/h",
-        "Travaux de couverture & zinguerie":        "55–85 € HT/h",
-        "Traitement de toiture":                "40–60 € HT/h",
-        "Traitement et nettoyage de fa\u00e7ade":                   "30–50 € HT/h",
-        "Nettoyage de toiture":                   "20–35 € HT/h",
-        "R\u00e9paration de toiture bac acier":        "50–75 € HT/h",
-        "Goutti\u00e8res : d\u00e9bouchage et remplacement":                "45–70 € HT/h",
-        "R\u00e9paration de chemin\u00e9e et fa\u00eetage":        "55–85 € HT/h",
-        "Nettoyage et traitement de bardage":                   "35–55 € HT/h",
-        "Ramonage de chemin\u00e9e":                    "Forfait 80–150 € HT"
-    };
+    // Convertir un nom de service en data-value (minuscules, sans accents, avec tirets)
+    const slugify = text => text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
 
     // Mapping des valeurs data-value vers les labels français
     const VALUE_TO_LABEL = {
-        'renovation-toiture': 'Rénovation Toiture',
-        'reparation-toiture': 'Réparation Toiture',
-        'urgence-reparation-fuite': 'Urgence réparation fuite',
-        'remplacement-toiture': 'Remplacement complet toiture à neuf',
-        'ravalement-facade': 'Ravalement de façade',
-        'nettoyage-toiture': 'Nettoyage toiture',
-        'pose-gouttieres': 'Pose de gouttières',
-        'zinguerie': 'Zinguerie',
-        'fenetre-toit': 'Pose et remplacement de fenetre de toit',
-        'reparation-faitiere': 'Réparation Faitière',
         'maison': 'Maison individuelle',
         'appartement': 'Appartement / Copropriété',
         'commercial': 'Local commercial',
@@ -147,6 +80,11 @@ const PriceEstimator = (function() {
         'pas-presse': 'Pas pressé'
     };
     
+    // Ajouter dynamiquement les services (le lead affiche le nom du service tel qu'il est sur le site)
+    (window.BRAND_SERVICES || []).forEach(service => {
+        VALUE_TO_LABEL[slugify(service)] = service;
+    });
+
     // Ajouter dynamiquement les villes
     interventionCities.forEach((city, index) => {
         const slug = 'city-' + index;
@@ -163,10 +101,10 @@ const PriceEstimator = (function() {
             <div id="price-estimator" class="estimator-widget">
                 <div class="estimator-card">
                     <div class="estimator-header">
-                        <h3>Quel est le prix d'un couvreur ${deptDet}${deptDet.endsWith("'")?'':' '}${dept} ?</h3>
-                        <p class="estimator-subtitle">Estimation personnalisée basée sur les tarifs locaux ${deptDet}${deptDet.endsWith("'")?'':' '}${dept} (${deptNum})</p>
+                        <h3>Votre devis couvreur gratuit ${deptDet}${deptDet.endsWith("'")?'':' '}${dept}</h3>
+                        <p class="estimator-subtitle">Décrivez votre projet en quelques clics, un couvreur ${deptDetOf}${deptDetOf.endsWith("'")?'':' '}${dept} (${deptNum}) vous recontacte sous 24h</p>
                         <div class="estimator-badge">
-                            <span>✅</span> Réponse immédiate • Tarifs actuels • Sans démarcharge
+                            <span>✅</span> Devis gratuit • Sans engagement • Réponse sous 24h
                         </div>
                     </div>
                     
@@ -202,14 +140,8 @@ const PriceEstimator = (function() {
             for (let i = 0; i < window.BRAND_SERVICES.length; i++) {
                 const service = window.BRAND_SERVICES[i];
                 const emoji = window.BRAND_SERVICE_EMOJIS[i];
-                // Convertir le nom du service en data-value (minuscules, sans accents, avec tirets)
-                const dataValue = service
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-+|-+$/g, '');
-                
+                const dataValue = slugify(service);
+
                 servicesHTML += `
                     <button class="estimator-option" data-value="${dataValue}">
                         <span class="option-icon">${emoji}</span>
@@ -364,16 +296,17 @@ const PriceEstimator = (function() {
                     <p class="form-subtitle">Réponse d'un professionnel garantie sous 24h</p>
                     
                     <form id="estimator-contact-form" class="estimator-contact-form">
+                        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
                         <div class="form-group">
-                            <input type="text" id="est-nom" name="nom" required placeholder="Votre nom">
+                            <input type="text" id="est-nom" name="nom" required autocomplete="name" placeholder="Votre nom">
                         </div>
-                        
+
                         <div class="form-group">
-                            <input type="email" id="est-email" name="email" required placeholder="Votre email">
+                            <input type="email" id="est-email" name="email" required autocomplete="email" placeholder="Votre email">
                         </div>
-                        
+
                         <div class="form-group">
-                            <input type="tel" id="est-tel" name="telephone" required placeholder="Votre téléphone">
+                            <input type="tel" id="est-tel" name="telephone" required autocomplete="tel" placeholder="Votre téléphone">
                         </div>
                         
                         <button type="submit" class="btn-submit-estimator">📧 Recevoir mon devis</button>
@@ -393,250 +326,58 @@ const PriceEstimator = (function() {
         return steps[step] || '';
     }
 
-    function computeEstimate(state) {
-        // Conversion des clés de state vers les labels français
-        const work = VALUE_TO_LABEL[state.workType];
-        const housing = VALUE_TO_LABEL[state.housingType];
-        const surface = VALUE_TO_LABEL[state.surface];
-        const location = VALUE_TO_LABEL[state.location];
-        const access = VALUE_TO_LABEL[state.access];
-        const material = VALUE_TO_LABEL[state.materials];
-        const deadline = VALUE_TO_LABEL[state.delay];
-
-        // Valeurs de base
-        const basePerM2 = BASE_BY_WORK[work];
-        const refM2 = SURFACE_BUCKET[surface];
-
-        // Coefficients
-        const fHousing = HOUSING_FACTOR[housing] ?? 1.00;
-        const fLoc = LOCATION_FACTORS[location] ?? 1.00;
-        const fAccess = ACCESS_FACTOR[access] ?? 1.00;
-        const fMat = MATERIAL_FACTOR[material] ?? 1.00;
-        const fDelay = DEADLINE_FACTOR[deadline] ?? 1.00;
-
-        // Base × surface
-        const base = basePerM2 * refM2;
-
-        // Application des coefficients
-        let total = base * fHousing * fLoc * fAccess * fMat * fDelay;
-
-        // Fourchette
-        const min = Math.round(total * 0.90);
-        const max = Math.round(total * 1.20);
-
-        // Indication horaire
-        const hourly = HOURLY_HINT[work] || "—";
-
-        // Formatage FR
-        const fmt = n => n.toLocaleString("fr-FR") + " €";
-
-        return {
-            amountMin: min,
-            amountMax: max,
-            displayMin: fmt(min),
-            displayMax: fmt(max),
-            hourlyHint: hourly
-        };
-    }
-
-    function showResults() {
-        const result = computeEstimate(estimatorData);
-        const dept = window.BRAND_DEPARTMENT || 'Vendée';
-        const deptNum = window.BRAND_DEPARTMENT_NUMBER || '85';
-        const deptDet = window.BRAND_DEPARTMENT_DETERMINER || 'en';
-
-        const resultHTML = `
-            <div class="estimator-result">
-                <div class="result-price-box">
-                    <h4>Estimation pour ${dept} (${deptNum}) :</h4>
-                    <div class="price-range">${result.displayMin} - ${result.displayMax}</div>
-                    <p class="result-info">
-                        📍 Tarifs basés sur les spécialistes locaux ${deptDet}${deptDet.endsWith("'")?'':' '}${dept} (${deptNum})<br>
-                        Estimation indicative — un devis gratuit est recommandé pour un prix précis
-                    </p>
-                </div>
-
-                <div class="result-cta">
-                    <button class="btn-quote-popup">📞 Devis Gratuit</button>
-                </div>
-
-                <button class="btn-reset">🔄 Nouvelle estimation</button>
-            </div>
-        `;
-
-        document.getElementById('estimator-content').innerHTML = resultHTML;
-        updateProgress(100);
-        
-        // Attacher l'événement au bouton reset
-        const resetBtn = document.querySelector('.btn-reset');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', reset);
-        }
-
-        // Attacher l'événement au bouton devis
-        const quoteBtn = document.querySelector('.btn-quote-popup');
-        if (quoteBtn) {
-            quoteBtn.addEventListener('click', openQuotePopup);
-        }
-    }
-
-    function openQuotePopup() {
-        const result = computeEstimate(estimatorData);
-        
-        const popupHTML = `
-            <div class="quote-popup-overlay" id="quote-popup-overlay">
-                <div class="quote-popup">
-                    <button class="popup-close" id="popup-close">&times;</button>
-                    <h3>Demander un devis personnalisé</h3>
-                    <p class="popup-price">Estimation : ${result.displayMin} - ${result.displayMax}</p>
-                    
-                    <form id="quote-form" class="quote-form">
-                        <input type="hidden" name="estimation_min" value="${result.amountMin}">
-                        <input type="hidden" name="estimation_max" value="${result.amountMax}">
-                        <input type="hidden" name="travaux" value="${VALUE_TO_LABEL[estimatorData.workType]}">
-                        <input type="hidden" name="logement" value="${VALUE_TO_LABEL[estimatorData.housingType]}">
-                        <input type="hidden" name="surface" value="${VALUE_TO_LABEL[estimatorData.surface]}">
-                        <input type="hidden" name="localisation" value="${VALUE_TO_LABEL[estimatorData.location]}">
-                        <input type="hidden" name="acces" value="${VALUE_TO_LABEL[estimatorData.access]}">
-                        <input type="hidden" name="materiaux" value="${VALUE_TO_LABEL[estimatorData.materials]}">
-                        <input type="hidden" name="delai" value="${VALUE_TO_LABEL[estimatorData.delay]}">
-                        
-                        <div class="form-group">
-                            <label for="quote-nom">Nom *</label>
-                            <input type="text" id="quote-nom" name="nom" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="quote-email">Email *</label>
-                            <input type="email" id="quote-email" name="email" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="quote-tel">Téléphone *</label>
-                            <input type="tel" id="quote-tel" name="telephone" required>
-                        </div>
-                        
-                        <button type="submit" class="btn-submit-quote">Envoyer ma demande</button>
-                    </form>
-                    
-                    <div class="quote-success" id="quote-success">
-                        ✅ Votre demande a été envoyée avec succès !<br>
-                        Nous vous recontactons rapidement.
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', popupHTML);
-        
-        // Événements popup
-        const overlay = document.getElementById('quote-popup-overlay');
-        const closeBtn = document.getElementById('popup-close');
-        const form = document.getElementById('quote-form');
-        const successMsg = document.getElementById('quote-success');
-        
-        closeBtn.addEventListener('click', () => overlay.remove());
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.remove();
-        });
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
-            
-            // Préparer les données pour send-email.php (format compatible)
-            const emailData = {
-                type: 'estimateur',
-                nom: data.nom,
-                email: data.email,
-                telephone: data.telephone,
-                estimation_min: data.estimation_min,
-                estimation_max: data.estimation_max,
-                travaux: data.travaux,
-                logement: data.logement,
-                surface: data.surface,
-                localisation: data.localisation,
-                acces: data.acces,
-                materiaux: data.materiaux,
-                delai: data.delai
-            };
-            
-            
-            try {
-                const submitBtn = form.querySelector('.btn-submit-quote');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Envoi en cours...';
-                
-                await sendToWebhook(emailData);
-
-                form.style.display = 'none';
-                successMsg.style.display = 'block';
-                
-                setTimeout(() => {
-                    overlay.remove();
-                }, 3000);
-            } catch (error) {
-                alert('Erreur lors de l\'envoi. Veuillez réessayer ou nous appeler directement.');
-                const submitBtn = form.querySelector('.btn-submit-quote');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Envoyer ma demande';
-            }
-        });
-    }
-
     function attachFormSubmitListener() {
         const form = document.getElementById('estimator-contact-form');
         const successMsg = document.getElementById('estimator-success');
         
         if (!form) return;
-        
+
+        const field = name => form.querySelector(`[name="${name}"]`);
+        Object.keys(CONTACT_CHECKS).forEach(name => {
+            field(name).addEventListener('input', () => field(name).setCustomValidity(''));
+        });
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            
-            const formData = new FormData(form);
-            
-            // Préparer les données pour send-email.php
-            const emailData = {
-                type: 'estimateur',
-                nom: formData.get('nom'),
-                email: formData.get('email'),
-                telephone: formData.get('telephone'),
-                message: formData.get('message') || '',
-                travaux: VALUE_TO_LABEL[estimatorData.workType] || estimatorData.workType || 'Non spécifié',
-                logement: VALUE_TO_LABEL[estimatorData.housingType] || estimatorData.housingType || 'Non spécifié',
-                surface: VALUE_TO_LABEL[estimatorData.surface] || estimatorData.surface || 'Non spécifié',
-                localisation: VALUE_TO_LABEL[estimatorData.location] || estimatorData.location || 'Non spécifié',
-                acces: VALUE_TO_LABEL[estimatorData.access] || estimatorData.access || 'Non spécifié',
-                materiaux: VALUE_TO_LABEL[estimatorData.materials] || estimatorData.materials || 'Non spécifié',
-                delai: VALUE_TO_LABEL[estimatorData.delay] || estimatorData.delay || 'Non spécifié'
+            if (field('_honey').value) return;
+
+            // Vérifie nom, email et téléphone comme le formulaire de contact
+            Object.keys(CONTACT_CHECKS).forEach(name => {
+                const [isValid, message] = CONTACT_CHECKS[name];
+                field(name).setCustomValidity(isValid(field(name).value.trim()) ? '' : message);
+            });
+            if (!form.reportValidity()) return;
+
+            const label = key => VALUE_TO_LABEL[estimatorData[key]] || estimatorData[key] || 'Non spécifié';
+            const contact = {
+                nom: field('nom').value.trim(),
+                email: field('email').value.trim(),
+                telephone: field('telephone').value.trim()
             };
-            
-            
-            try {
-                const submitBtn = form.querySelector('.btn-submit-estimator');
-                submitBtn.disabled = true;
-                submitBtn.textContent = '⏳ Envoi en cours...';
+            const answers = {
+                'Travaux': label('workType'),
+                'Logement': label('housingType'),
+                'Surface': label('surface'),
+                'Localisation': label('location'),
+                'Accès': label('access'),
+                'Matériaux': label('materials'),
+                'Délai': label('delay')
+            };
 
-                await sendToWebhook(emailData);
+            const submitBtn = form.querySelector('.btn-submit-estimator');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Envoi en cours...';
 
-                form.style.display = 'none';
-                successMsg.style.display = 'block';
-                
-                // Réinitialiser après 5 secondes
-                setTimeout(() => {
-                    reset();
-                }, 5000);
-            } catch (error) {
-                alert('Erreur lors de l\'envoi. Veuillez réessayer ou nous appeler directement.');
-                const submitBtn = form.querySelector('.btn-submit-estimator');
-                const originalText = 'Envoyer ma demande';
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
+            // Comme le formulaire de contact : on confirme au plus tard après 4 secondes
+            await Promise.race([sendToWebhook(contact, answers), new Promise(r => setTimeout(r, 4000))]);
+
+            form.style.display = 'none';
+            successMsg.style.display = 'block';
+
+            // Réinitialiser après 5 secondes
+            setTimeout(() => {
+                reset();
+            }, 5000);
         });
     }
 
