@@ -468,7 +468,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="telephone" class="form-label">Téléphone</label>
-                                <input type="tel" id="telephone" name="telephone" class="form-input" placeholder="06 12 34 56 78" required pattern="^(\+33|0)[1-9](\d{2}){4}$">
+                                <input type="tel" id="telephone" name="telephone" class="form-input" placeholder="06 12 34 56 78" required pattern="(?:(?:\+|00)33[ .\-]?|0)[1-9](?:[ .\-]?\d{2}){4}" maxlength="20" inputmode="tel" title="Numéro français uniquement : 06 12 34 56 78 ou +33 6 12 34 56 78">
                             </div>
                         </div>
                         <div class="form-group">
